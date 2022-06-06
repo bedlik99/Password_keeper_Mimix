@@ -1,0 +1,65 @@
+<?import com.jfoenix.controls.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.*?>
+<BorderPane fx:controller="Controller.MainWindowController" xmlns:fx="http://javafx.com/fxml"
+            fx:id="windowRootBorderPane">
+    <top>
+        <GridPane fx:id="topGridPane">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50"/>
+                <ColumnConstraints percentWidth="50"/>
+            </columnConstraints>
+            <HBox GridPane.columnIndex="0">
+                <JFXButton fx:id="addNewCredentialsButton" onAction="#handleAddNewCredentialButton"
+                           styleClass="standardButton" text="Add"/>
+                <JFXButton disable="true" fx:id="updateCredentialsButton" onAction="#handleUpdateCredentialButton"
+                           styleClass="standardButton" text="Update"/>
+                <JFXButton disable="true" fx:id="removeCredentialButton" onAction="#handleRemoveCredentialButton"
+                           styleClass="standardButton" text="Remove"/>
+            </HBox>
+            <HBox styleClass="closeButtonHBox" GridPane.columnIndex="1">
+                <JFXButton fx:id="minimizeButton" onAction="#handleMinimizeAppButton" styleClass="standardButton">
+                    &#128469;
+                </JFXButton>
+                <JFXButton fx:id="maximizeButton" onAction="#handleMaximizeAppButton" styleClass="standardButton"
+                           text="Maximize" />
+                <JFXButton fx:id="closeButton" onAction="#handleSignOutAppButton" styleClass="standardButton"
+                text="Sign out" />
+            </HBox>
+        </GridPane>
+    </top>
+    <center>
+        <GridPane fx:id="centerGridPane" >
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50"/>
+                <ColumnConstraints percentWidth="50"/>
+            </columnConstraints>
+            <VBox GridPane.columnIndex="0" alignment="CENTER">
+                <ListView fx:id="platformNamesListView" />
+            </VBox>
+            <VBox fx:id="chosenPlatformCredsVBox" GridPane.columnIndex="1" >
+                <VBox>
+                    <Label fx:id="platformNameLabel" text=" Platform: "/>
+                </VBox>
+                <HBox>
+                    <Label text=" Username: "/>
+                    <JFXTextField fx:id="usernameTextField" editable="false" styleClass="JFXTextField"/>
+                </HBox>
+                <HBox>
+                    <Label text=" Password:  "/>
+                    <JFXTextField fx:id="passwordTextField" editable="false" styleClass="JFXTextField"/>
+                </HBox>
+                <HBox styleClass="borderUnderscoreStyle" >
+                    <JFXButton fx:id="clearSelectionButton" styleClass="standardButton"
+                               onAction="#handleClearCredentialSelectionButton" text="Clear Selection" />
+                </HBox>
+            </VBox>
+        </GridPane>
+    </center>
+    <bottom>
+        <HBox fx:id="profileSettingsHBox" alignment="CENTER_RIGHT" >
+            <JFXComboBox promptText="Profile settings" fx:id="settingsComboBox" />
+        </HBox>
+    </bottom>
+</BorderPane>

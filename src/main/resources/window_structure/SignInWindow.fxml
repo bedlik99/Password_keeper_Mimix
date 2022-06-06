@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import com.jfoenix.controls.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<BorderPane fx:id="windowRootBorderPane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="Controller.SignInController">
+            <top>
+                <GridPane fx:id="topGridPane">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="50"/>
+                        <ColumnConstraints percentWidth="50"/>
+                    </columnConstraints>
+                    <HBox GridPane.columnIndex="0">
+                        <Label fx:id="headerLabel" text="Password Keeper: |Mimix| - Beta version"/>
+                    </HBox>
+                    <HBox styleClass="closeButtonHBox" GridPane.columnIndex="1">
+                        <JFXButton fx:id="minimizeButton" onAction="#handleMinimizeAppButton" styleClass="standardButton">&#128469;</JFXButton>
+                        <JFXButton fx:id="closeButton" onAction="#handleCloseAppButton" styleClass="standardButton">Close</JFXButton>
+                    </HBox>
+                </GridPane>
+            </top>
+            <center>
+                <GridPane fx:id="midGridPane" >
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="50"/>
+                        <ColumnConstraints percentWidth="50"/>
+                    </columnConstraints>
+
+                    <GridPane GridPane.columnIndex="0" fx:id="inputModeGridPane">
+                        <rowConstraints>
+                            <RowConstraints percentHeight="50"/>
+                            <RowConstraints percentHeight="50"/>
+                        </rowConstraints>
+
+                        <HBox GridPane.rowIndex="0" styleClass="borderUnderscoreStyle">
+                            <GridPane>
+                                <rowConstraints>
+                                    <RowConstraints percentHeight="25"/>
+                                    <RowConstraints percentHeight="25"/>
+                                    <RowConstraints percentHeight="25"/>
+                                    <RowConstraints percentHeight="25"/>
+                                </rowConstraints>
+                                <VBox GridPane.rowIndex="0">
+                                    <Label text="Sign in to existing profile"/>
+                                </VBox>
+                                <VBox GridPane.rowIndex="1">
+                                    <HBox>
+                                        <Label text="Profile name:  "/>
+                                        <JFXTextField fx:id="signInProfileNameTextField" styleClass="JFXTextField"
+                                                      focusColor="aqua"/>
+                                    </HBox>
+                                </VBox>
+                                <VBox GridPane.rowIndex="2">
+                                    <HBox>
+                                        <Label text="Password:       "/>
+                                        <JFXPasswordField fx:id="signInProfilePasswordTextField"
+                                                          styleClass="JFXTextField" focusColor="aqua"/>
+                                        <JFXButton fx:id="showSignInPassButton" styleClass="standardButton" text="Show"/>
+                                    </HBox>
+                                    <HBox styleClass="visiblePasswordHBox">
+                                        <Text visible="false" fx:id="signInPasswordVisibleText"/>
+                                    </HBox>
+                                </VBox>
+                                <VBox styleClass="buttonsVBox" GridPane.rowIndex="3">
+                                    <JFXButton fx:id="signInButton" onAction="#handleSignInButton"
+                                               styleClass="standardButton">Sign in
+                                    </JFXButton>
+                                </VBox>
+                            </GridPane>
+                        </HBox>
+                        <HBox GridPane.rowIndex="1" fx:id="createNewProfileGridPane" >
+                            <GridPane>
+                                <rowConstraints>
+                                    <RowConstraints percentHeight="25"/>
+                                    <RowConstraints percentHeight="25"/>
+                                    <RowConstraints percentHeight="25"/>
+                                    <RowConstraints percentHeight="25"/>
+                                </rowConstraints>
+                                <VBox GridPane.rowIndex="0">
+                                    <JFXCheckBox fx:id="newProfileCheckbox" text="Create new profile"/>
+                                </VBox>
+                                <VBox GridPane.rowIndex="1">
+                                    <HBox>
+                                        <Label text="Profile name:  "/>
+                                        <JFXTextField fx:id="newProfileNameTextField" disable="true"
+                                                      styleClass="JFXTextField" focusColor="aqua"/>
+                                    </HBox>
+                                </VBox>
+                                <VBox GridPane.rowIndex="2">
+                                    <HBox>
+                                        <Label text="Password:       "/>
+                                        <JFXPasswordField fx:id="newProfilePasswordTextField" disable="true"
+                                                          styleClass="JFXTextField" focusColor="aqua"/>
+                                        <JFXButton disable="true" fx:id="showNewPassButton" styleClass="standardButton" text="Show"/>
+                                    </HBox>
+                                    <HBox styleClass="visiblePasswordHBox">
+                                        <Text visible="false" fx:id="newPasswordVisibleText"/>
+                                    </HBox>
+                                </VBox>
+                                <VBox styleClass="buttonsVBox" GridPane.rowIndex="3">
+                                    <JFXButton fx:id="createProfileButton" onAction="#handleCreateNewProfileButton"
+                                               disable="true" styleClass="standardButton">Create
+                                    </JFXButton>
+                                </VBox>
+                            </GridPane>
+                        </HBox>
+                    </GridPane>
+                    <BorderPane fx:id="logBorderPane" GridPane.columnIndex="1" >
+                        <top>
+                            <Label fx:id="responseLabel"  text="Detailed response" />
+                        </top>
+                        <center>
+                            <HBox fx:id="responseHBox">
+                                <JFXTextArea fx:id="programResponseTextField" editable="false"/>
+                            </HBox>
+                        </center>
+                        <bottom>
+                            <HBox fx:id="settingsHBox">
+                                <JFXComboBox promptText="Settings" fx:id="settingsComboBox" />
+                            </HBox>
+                        </bottom>
+                    </BorderPane>
+                </GridPane>
+            </center>
+</BorderPane>

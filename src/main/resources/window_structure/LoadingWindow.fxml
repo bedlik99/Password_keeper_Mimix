@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXProgressBar?>
+<?import javafx.scene.control.DialogPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.*?>
+<DialogPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:id="loadingWindowDialogPane"
+            fx:controller="Controller.LoadingWindowController">
+    <content>
+        <BorderPane>
+            <center>
+                <GridPane alignment="BASELINE_CENTER">
+                    <rowConstraints>
+                        <RowConstraints percentHeight="50"/>
+                        <RowConstraints percentHeight="50"/>
+                    </rowConstraints>
+                    <VBox GridPane.rowIndex="0" styleClass="buttonsVBox">
+                        <Label text="Operation in progress..."/>
+                    </VBox>
+                    <VBox GridPane.rowIndex="1" styleClass="buttonsVBox">
+                        <JFXProgressBar fx:id="loadingProgressBar" progress="0"/>
+                    </VBox>
+                </GridPane>
+            </center>
+        </BorderPane>
+    </content>
+</DialogPane>

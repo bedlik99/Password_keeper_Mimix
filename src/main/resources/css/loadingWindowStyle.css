@@ -1,0 +1,11 @@
+#loadingProgressBar {
+    -fx-min-height: 40;
+}
+
+.buttonsVBox {
+    -fx-alignment: BOTTOM_CENTER;
+}
+
+.label {
+    -fx-font-size: 20;
+}

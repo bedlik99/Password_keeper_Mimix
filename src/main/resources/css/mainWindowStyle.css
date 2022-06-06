@@ -1,0 +1,126 @@
+#windowRootBorderPane {
+    -fx-background-image: url("/background1.jpg");
+    -fx-background-size: cover;
+    -fx-border-style: solid;
+    -fx-border-color: #adedff;
+    -fx-border-width: 5;
+}
+
+#topGridPane {
+    -fx-translate-y: 5;
+    -fx-padding: 15;
+    -fx-background-radius: 20.0;
+    -fx-border-radius: 20;
+    -fx-border-width: 2;
+    -fx-background-color: #ADD8E6;
+    -fx-border-color: #adedff;
+}
+
+#updateCredentialsButton {
+    -fx-translate-x: 5
+}
+
+#removeCredentialButton {
+    -fx-translate-x: 10
+}
+
+#centerGridPane {
+    -fx-padding: 10;
+}
+
+#platformNamesListView {
+    -fx-font-size: 20;
+}
+
+#chosenPlatformCredsVBox {
+    -fx-spacing: 10;
+}
+
+#platformNameLabel {
+    -fx-font-weight: bold;
+}
+
+.label {
+    -fx-font-size: 20;
+}
+
+.JFXTextField {
+    -fx-font-size: 20;
+    -fx-background-color: white;
+}
+
+.JFXTextField :hover {
+    -fx-opacity: 0.9;
+}
+
+.borderUnderscoreStyle {
+    -fx-border-style: hidden hidden solid hidden;
+    -fx-border-width: 2;
+    -fx-border-color: #E0FFFF;
+    -fx-alignment: TOP_LEFT;
+    -fx-padding: 5;
+}
+
+.standardButton {
+    -fx-padding: 8 15 15 15;
+    -fx-background-insets: 0,0 0 5 0, 0 0 6 0, 0 0 7 0;
+    -fx-background-radius: 8;
+    -fx-background-color:
+            linear-gradient(from 0% 93% to 0% 100%, #66a0ed 0%, #4d8ee3 100%),
+            #66a0ed,
+            #66a0ed,
+            radial-gradient(center 50% 50%, radius 100%, #66a0ed, #66a0ed);
+    -fx-effect: dropshadow( gaussian , rgba(0,0,0,0.75) , 4,0,0,1 );
+    -fx-font-weight: bold;
+    -fx-font-size: 1.1em;
+}
+
+.standardButton:hover {
+    -fx-background-color:
+            linear-gradient(from 0% 93% to 0% 100%, #66a0ed 0%, #78a9eb 100%),
+            #66a0ed,
+            #66a0ed,
+            radial-gradient(center 50% 50%, radius 100%, #2b7be3, #78a9eb);
+}
+
+.standardButton:pressed {
+    -fx-padding: 10 15 13 15;
+    -fx-background-insets: 2 0 0 0,2 0 3 0, 2 0 4 0, 2 0 5 0;
+}
+
+#headerLabel {
+    -fx-font-size: 22;
+    -fx-font-weight: bold;
+}
+
+#minimizeButton {
+    -fx-translate-y: -5;
+    -fx-translate-x: -10;
+}
+
+#maximizeButton {
+    -fx-translate-y: -5;
+    -fx-translate-x: -5;
+}
+
+.closeButtonHBox {
+    -fx-alignment: TOP_RIGHT;
+}
+
+#closeButton {
+    -fx-translate-y: -5;
+    -fx-min-width: 80;
+}
+
+#profileSettingsHBox {
+    -fx-padding: 5;
+}
+
+#settingsComboBox {
+    -fx-background-color: white;
+    -fx-font-size: 18;
+}
+
+#settingsComboBox:hover {
+    -fx-opacity: 0.9;
+}
