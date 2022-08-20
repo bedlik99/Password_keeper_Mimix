@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Base64;
+import java.util.Random;
 
 public class FileEncrypterDecrypter {
 
@@ -124,6 +125,17 @@ public class FileEncrypterDecrypter {
         KeySpec spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(StandardCharsets.UTF_8),
                 65536, 256);
         return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
+    }
+
+    public static String generateRandomText(int textLength) {
+        String base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        StringBuilder result = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < textLength; i++) {
+            char randomChar = base64Chars.charAt(random.nextInt(64));
+            result.append(randomChar);
+        }
+        return result.toString();
     }
 
     public void clearSecrets() {

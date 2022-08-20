@@ -12,7 +12,7 @@
                         <ColumnConstraints percentWidth="50"/>
                     </columnConstraints>
                     <HBox GridPane.columnIndex="0">
-                        <Label fx:id="headerLabel" text="Password Keeper: |Mimix| - Beta version"/>
+                        <Label fx:id="headerLabel" text="Password Manager: |Mimix| - Beta version"/>
                     </HBox>
                     <HBox styleClass="closeButtonHBox" GridPane.columnIndex="1">
                         <JFXButton fx:id="minimizeButton" onAction="#handleMinimizeAppButton" styleClass="standardButton">&#128469;</JFXButton>

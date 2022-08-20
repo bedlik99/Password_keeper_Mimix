@@ -38,6 +38,10 @@ public class SecuredProfileDetails {
         securedProfileUserName = "";
     }
 
+    public boolean isProfileDetailsInitialized() {
+        return !profileFileContent.isBlank() && !securedProfileUserName.isBlank();
+    }
+
     public JSONObject returnJSONObject() {
         JSONObject securedProfileCredentials = new JSONObject();
         securedProfileCredentials.put("profileFileContent", profileFileContent);

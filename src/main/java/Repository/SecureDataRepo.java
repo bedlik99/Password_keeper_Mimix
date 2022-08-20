@@ -159,7 +159,7 @@ public class SecureDataRepo {
                 standardFileEncrypterDecrypter = instantiateFileEncrypterDecrypter(orderedProfileUsername);
                 if (standardFileEncrypterDecrypter == null) return;
                 standardFileEncrypterDecrypter.encryptAndEncodeFile(jsonObjectToSave, newProfilePath);
-            } catch (Exception e) {
+            } catch (Exception ignore) {
             } finally {
                 applicationState = 0;
                 streamManager.clearCommandResult();
@@ -275,10 +275,10 @@ public class SecureDataRepo {
                 .getWindowCreationManager()
                 .showUpdateProfileCredentialsWindow(windowOwner, initialSignedInUserPlainCredentials);
         if (updatedSignedInUserPlainCredentials == null) return;
-        if(doesProfileUserNameExist(updatedSignedInUserPlainCredentials[0])) {
+        if (doesProfileUserNameExist(updatedSignedInUserPlainCredentials[0])) {
             PasswordKeeperMain.getWindowCreationManager().showInformationDialog(
                     "Unsuccessful profile update",
-                            "Occupied username",
+                    "Occupied username",
                     "Profile with given username already exists.");
             return;
         }
@@ -295,7 +295,7 @@ public class SecureDataRepo {
                 orderedProfileNameBW.flush();
 
                 int it = 1;
-                List <PlatformCredential> initialPlatformCredentials = new ArrayList<>(signedInUserProfile.getPlatformCredentials());
+                LinkedList<PlatformCredential> initialPlatformCredentials = new LinkedList<>(signedInUserProfile.getPlatformCredentials());
                 for (PlatformCredential platformCredential : signedInUserProfile.getPlatformCredentials()) {
                     decryptSelectedPlatformCredential(platformCredential.getPlatformUsername(), initialSignedInUserUsername);
                     PasswordKeeperMain.getWindowCreationManager()
@@ -340,7 +340,7 @@ public class SecureDataRepo {
             }
             return;
         }
-        if(!updatedSignedInUserPlainCredentials[1].equals(initialSignedInUserPlainCredentials[1])) {
+        if (!updatedSignedInUserPlainCredentials[1].equals(initialSignedInUserPlainCredentials[1])) {
             String newPasswordHash = BCrypt.hashpw(updatedSignedInUserPlainCredentials[1], BCrypt.gensalt());
             Platform.runLater(() -> setScriptFinishedOk(
                     runSecureScript(1, newPasswordHash, signedInUserProfile.getProfileUsername(), secureBinaryPProgramName)
@@ -622,6 +622,7 @@ public class SecureDataRepo {
             customFileEncrypterDecrypter = null;
         }
     }
+
 
     public int getApplicationState() {
         return applicationState;

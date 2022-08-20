@@ -9,7 +9,7 @@ public class UserProfile {
 
     private String profileUsername;
     private String profilePassword;
-    private List<PlatformCredential> platformCredentials = new LinkedList<>();
+    private LinkedList<PlatformCredential> platformCredentials = new LinkedList<>();
 
     public UserProfile() {}
     public UserProfile(String profileUsername, String profilePassword) {
@@ -33,11 +33,11 @@ public class UserProfile {
         this.profilePassword = profilePassword;
     }
 
-    public List<PlatformCredential> getPlatformCredentials() {
+    public LinkedList<PlatformCredential> getPlatformCredentials() {
         return platformCredentials;
     }
 
-    public void setPlatformCredentials(List<PlatformCredential> platformCredentials) {
+    public void setPlatformCredentials(LinkedList<PlatformCredential> platformCredentials) {
         this.platformCredentials = platformCredentials;
     }
 

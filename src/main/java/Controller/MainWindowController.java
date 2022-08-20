@@ -1,10 +1,12 @@
 package Controller;
 
 import DataModel.PlatformCredential;
+import DataModel.SecuredProfileDetails;
 import DataModel.UserProfile;
 import Main.PasswordKeeperMain;
 import Repository.SecureDataRepo;
 import Service.UserService;
+import Util.FileEncrypterDecrypter;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTextField;
@@ -22,15 +24,18 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainWindowController {
 
@@ -73,12 +78,22 @@ public class MainWindowController {
 
     private final PlatformCredential selectedCredential = new PlatformCredential();
     private int indexOfSelectedPlatform = -1;
+    private final String[] SETTINGS_OPTIONS = {
+            "1. Generate profile details file\n(importable only on this device system profile)\n_____________________________________________________",
+            "2. Generate unprotected, not encrypted,\nplain credentials file (unrecommended)\n_____________________________________________________",
+            "3. Import credentials from plain credentials file (2)\n_____________________________________________________",
+            "4. Update profile login credentials\n_____________________________________________________",
+            "5. Delete profile\n_____________________________________________________"
+    };
 
     public void initialize() {
         ObservableList<String> settingsObservableList = FXCollections.observableArrayList();
-        settingsObservableList.add("Generate profile details file\n(importable only on this device system profile)");
-        settingsObservableList.add("Update profile login credentials");
-        settingsObservableList.add("Delete profile");
+        settingsObservableList.add(SETTINGS_OPTIONS[0]);
+        settingsObservableList.add(SETTINGS_OPTIONS[1]);
+        settingsObservableList.add(SETTINGS_OPTIONS[2]);
+        settingsObservableList.add(SETTINGS_OPTIONS[3]);
+        settingsObservableList.add(SETTINGS_OPTIONS[4]);
+
         settingsComboBox.setItems(settingsObservableList);
         topGridPane.setOnMousePressed(mouseEvent -> topGridPane
                 .setOnMouseDragged(dragEvent -> enableCustomWindowMoving(mouseEvent, dragEvent)));
@@ -121,12 +136,16 @@ public class MainWindowController {
             }
         };
         cell.setOnMousePressed(e -> {
-            if (cell.getItem().equals("Delete profile")) {
+            if (cell.getItem().equals(SETTINGS_OPTIONS[4])) {
                 deleteProfile();
-            } else if (cell.getItem().equals("Generate profile details file\n(importable only on this device system profile)")) {
+            } else if (cell.getItem().equals(SETTINGS_OPTIONS[0])) {
                 generateSecuredProfileFile();
-            } else if (cell.getItem().equals("Update profile login credentials")) {
+            } else if (cell.getItem().equals(SETTINGS_OPTIONS[3])) {
                 updateProfileCredentials();
+            } else if (cell.getItem().equals(SETTINGS_OPTIONS[1])) {
+                generatePlainPlatformCredentialsFile();
+            } else if (cell.getItem().equals(SETTINGS_OPTIONS[2])) {
+                importPlainPlatformCredentialsFile();
             }
             resetSettingSelection();
         });
@@ -143,23 +162,22 @@ public class MainWindowController {
         File selectedDirectory = directoryChooser.showDialog(windowRootBorderPane.getScene().getWindow());
         if (selectedDirectory == null || !selectedDirectory.exists() || !selectedDirectory.isDirectory()) return;
         boolean credentialsSuccessfullyGenerated = userService.generateSecuredProfileCredentials();
-        if(!credentialsSuccessfullyGenerated) return;
-        userService.getSecureDataRepo().encryptGeneratedFileContent(
-                userService.getSecureDataRepo().getSecuredProfileDetails().returnJSONObject().toJSONString());
+        SecuredProfileDetails securedProfileDetails = userService.getSecureDataRepo().getSecuredProfileDetails();
+        if (!credentialsSuccessfullyGenerated || !securedProfileDetails.isProfileDetailsInitialized()) return;
+        userService.getSecureDataRepo().encryptGeneratedFileContent(securedProfileDetails.returnJSONObject().toJSONString());
         PasswordKeeperMain.getWindowCreationManager()
                 .showLoadingDialog("Encrypting profile details file", "LoadingWindow.fxml");
         String encryptedContent = userService.getSecureDataRepo().getStreamManager().getCommandResult();
         userService.getSecureDataRepo().getStreamManager().clearCommandResult();
         if (encryptedContent == null || encryptedContent.isBlank()) return;
-        saveSecuredProfileCredentials(encryptedContent, selectedDirectory);
+        saveAllProfilePlatformCredentials(encryptedContent, selectedDirectory);
     }
 
-    private void saveSecuredProfileCredentials(String encryptedContent, File selectedDirectory) {
-        if (userService.getSecureDataRepo().getSecuredProfileDetails().getSecuredProfileUserName().isBlank())
-            return;
+    private void saveAllProfilePlatformCredentials(String content, File selectedDirectory) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(selectedDirectory.getAbsolutePath()
-                + "/profile_details_" + formatter.format(new Date(System.currentTimeMillis())) + ".json"))) {
-            bw.write(encryptedContent);
+                + "/profile_details_" + FileEncrypterDecrypter.generateRandomText(6) + "_"
+                + formatter.format(new Date(System.currentTimeMillis())) + ".json"))) {
+            bw.write(content);
             bw.flush();
         } catch (IOException ignored) {
         }
@@ -167,7 +185,7 @@ public class MainWindowController {
 
     private void deleteProfile() {
         String selectedItem = settingsComboBox.getSelectionModel().getSelectedItem();
-        if (selectedItem == null || !selectedItem.equals("Delete profile")) return;
+        if (selectedItem == null || !selectedItem.equals(SETTINGS_OPTIONS[4])) return;
         boolean profileDeletionWasConfirmed = isActionConfirmed("Profile Deletion",
                 "You are going to delete this profile.\nYou will be signed out automatically.");
         if (!profileDeletionWasConfirmed) return;
@@ -228,28 +246,80 @@ public class MainWindowController {
         if (platformName == null) return;
         if (platformName.equals(selectedCredential.getPlatformName())) return;
         clearVisibleDataInFields();
-        SecureDataRepo secureDataRepo = userService.getSecureDataRepo();
         PlatformCredential platformCredential = userService.findPlatformCredentialByPlatformName(platformName);
         if (platformCredential == null) return;
 
-        secureDataRepo.decryptSelectedPlatformCredential(
-                platformCredential.getPlatformUsername(), signedInUserProfile.getProfileUsername());
-        PasswordKeeperMain.getWindowCreationManager().showLoadingDialog(
-                "Decrypting username", "LoadingWindow.fxml");
-        String decryptedUsername = secureDataRepo.getStreamManager().getCommandResult();
+        String[] decryptedCredentials = decryptPlatformUsernameAndPassword(platformCredential);
+        String decryptedUsername = decryptedCredentials[0];
+        String decryptedPassword = decryptedCredentials[1];
 
-        secureDataRepo.decryptSelectedPlatformCredential(
-                platformCredential.getPlatformPassword(), signedInUserProfile.getProfileUsername());
-        PasswordKeeperMain.getWindowCreationManager().showLoadingDialog(
-                "Decrypting password", "LoadingWindow.fxml");
-        String decryptedPassword = secureDataRepo.getStreamManager().getCommandResult();
-
-        secureDataRepo.getStreamManager().clearCommandResult();
         platformNameLabel.setText(" Platform: " + platformName);
         usernameTextField.setText(decryptedUsername);
         passwordTextField.setText(decryptedPassword);
         selectedCredential.setAllPlatformAttributes(platformName, decryptedUsername, decryptedPassword);
         indexOfSelectedPlatform = signedInUserProfile.getPlatformCredentials().indexOf(platformCredential);
+    }
+
+    private void generatePlainPlatformCredentialsFile() {
+        String decryptedCredentials = "[" +
+                new ArrayList<>(userService.getSignedInUserProfile().getPlatformCredentials())
+                        .stream()
+                        .map(credential -> {
+                            String[] decryptedCredential = decryptPlatformUsernameAndPassword(credential);
+                            return new PlatformCredential(credential.getPlatformName(), decryptedCredential[0], decryptedCredential[1]);
+                        })
+                        .collect(Collectors.toList())
+                        .stream()
+                        .map(PlatformCredential::toString)
+                        .collect(Collectors.joining(",")) + "]";
+
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory = directoryChooser.showDialog(windowRootBorderPane.getScene().getWindow());
+        if (selectedDirectory == null || !selectedDirectory.exists() || !selectedDirectory.isDirectory()) return;
+        saveAllProfilePlatformCredentials(decryptedCredentials, selectedDirectory);
+    }
+
+    private void importPlainPlatformCredentialsFile() {
+        FileChooser fileChooser = new FileChooser();
+        File selectedFile = fileChooser.showOpenDialog(windowRootBorderPane.getScene().getWindow());
+        if (selectedFile == null || !selectedFile.exists() || !selectedFile.isFile() ||
+                !selectedFile.getName().endsWith(".json")) return;
+        try {
+            JSONArray jsonFileContent = (JSONArray) new JSONParser().parse(Files.readString(Path.of(selectedFile.getAbsolutePath())));
+            List<PlatformCredential> importedPlatformCredentials = new ArrayList<>();
+            List<String> importedPlatformNames = new ArrayList<>();
+            jsonFileContent.forEach(platformCredential -> {
+                JSONObject credential = (JSONObject) platformCredential;
+                importedPlatformCredentials.add(new PlatformCredential(
+                        credential.get("platformName").toString(),
+                        credential.get("platformUsername").toString(),
+                        credential.get("platformPassword").toString()));
+                importedPlatformNames.add(credential.get("platformName").toString());
+            });
+            new ManageCredentialWindowController()
+                    .updatePlatformCredentialsData(importedPlatformCredentials, 'C', userService);
+            observablePlatformNamesList.addAll(importedPlatformNames);
+            userService.updateSignedInUserProfile();
+        } catch (Exception ignore) {
+        }
+    }
+
+    private String[] decryptPlatformUsernameAndPassword(PlatformCredential credential) {
+        String[] decryptedCredentials = new String[2];
+        SecureDataRepo secureDataRepo = userService.getSecureDataRepo();
+        secureDataRepo.decryptSelectedPlatformCredential(
+                credential.getPlatformUsername(), signedInUserProfile.getProfileUsername());
+        PasswordKeeperMain.getWindowCreationManager().showLoadingDialog(
+                "Decrypting username. Platform: " + credential.getPlatformName(), "LoadingWindow.fxml");
+        decryptedCredentials[0] = secureDataRepo.getStreamManager().getCommandResult();
+
+        secureDataRepo.decryptSelectedPlatformCredential(
+                credential.getPlatformPassword(), signedInUserProfile.getProfileUsername());
+        PasswordKeeperMain.getWindowCreationManager().showLoadingDialog(
+                "Decrypting password. Platform: " + credential.getPlatformName(), "LoadingWindow.fxml");
+        decryptedCredentials[1] = secureDataRepo.getStreamManager().getCommandResult();
+        secureDataRepo.getStreamManager().clearCommandResult();
+        return decryptedCredentials;
     }
 
     @FXML

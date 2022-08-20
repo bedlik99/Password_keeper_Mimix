@@ -17,6 +17,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class ManageCredentialWindowController {
 
     private UserService userService = null;
@@ -115,29 +119,40 @@ public class ManageCredentialWindowController {
     public void handleConfirmationButton() {
         if (isAnyTextFieldEmpty() || doesPlatformNameExist()) return;
         if (secureDataRepo.getApplicationState() != 0) return;
-
-        secureDataRepo.encryptInputCredential(usernameTextField.getText(), signedInUserProfile.getProfileUsername());
-        PasswordKeeperMain.getWindowCreationManager()
-                .showLoadingDialog("Encrypting and adding username", "LoadingWindow.fxml");
-        String encryptedUsername = secureDataRepo.getStreamManager().getCommandResult();
-
-        secureDataRepo.encryptInputCredential(passwordTextField.getText(), signedInUserProfile.getProfileUsername());
-        PasswordKeeperMain.getWindowCreationManager()
-                .showLoadingDialog("Encrypting and adding password", "LoadingWindow.fxml");
-        String encryptedPassword = secureDataRepo.getStreamManager().getCommandResult();
-
-        PlatformCredential newPlatformCredential =
-                new PlatformCredential(platformNameTextField.getText(), encryptedUsername, encryptedPassword);
-        if (windowCredentialMode == 'C') {
-            signedInUserProfile.getPlatformCredentials().add(newPlatformCredential);
-        } else {
-            PlatformCredential currentPlatformCredential = userService
-                    .findPlatformCredentialByPlatformName(selectedCredential.getPlatformName());
-            int indexOfRecordToUpdate = signedInUserProfile.getPlatformCredentials().indexOf(currentPlatformCredential);
-            signedInUserProfile.getPlatformCredentials().set(indexOfRecordToUpdate, newPlatformCredential);
-        }
+        List<PlatformCredential> platformCredentials = new ArrayList<>(
+                List.of(new PlatformCredential(
+                        platformNameTextField.getText(),
+                        usernameTextField.getText(),
+                        passwordTextField.getText())));
+        updatePlatformCredentialsData(platformCredentials, windowCredentialMode, userService);
         actionWasConfirmed = true;
         ((Stage) windowRootBorderPane.getScene().getWindow()).close();
+    }
+
+    public void updatePlatformCredentialsData(List<PlatformCredential> credentialsToAdd, char windowMode, UserService userService ) {
+        SecureDataRepo secureDataRepo = userService.getSecureDataRepo();
+        UserProfile signedInUserProfile = userService.getSignedInUserProfile();
+        credentialsToAdd.forEach(credential -> {
+            secureDataRepo.encryptInputCredential(credential.getPlatformUsername(), signedInUserProfile.getProfileUsername());
+            PasswordKeeperMain.getWindowCreationManager()
+                    .showLoadingDialog("Encrypting and adding username. Platform: " + credential.getPlatformName()  , "LoadingWindow.fxml");
+            String encryptedUsername = secureDataRepo.getStreamManager().getCommandResult();
+            secureDataRepo.encryptInputCredential(credential.getPlatformPassword(), signedInUserProfile.getProfileUsername());
+            PasswordKeeperMain.getWindowCreationManager()
+                    .showLoadingDialog("Encrypting and adding password. Platform: " +  credential.getPlatformName(), "LoadingWindow.fxml");
+            String encryptedPassword = secureDataRepo.getStreamManager().getCommandResult();
+            PlatformCredential newlyEncryptedPlatformCredential =
+                    new PlatformCredential(credential.getPlatformName(), encryptedUsername, encryptedPassword);
+            if (windowMode == 'C') {
+                signedInUserProfile.getPlatformCredentials().add(newlyEncryptedPlatformCredential);
+            }
+            if (windowMode == 'U') {
+                PlatformCredential currentPlatformCredential = userService
+                        .findPlatformCredentialByPlatformName(selectedCredential.getPlatformName());
+                int indexOfRecordToUpdate = signedInUserProfile.getPlatformCredentials().indexOf(currentPlatformCredential);
+                signedInUserProfile.getPlatformCredentials().set(indexOfRecordToUpdate, newlyEncryptedPlatformCredential);
+            }
+        });
     }
 
     public boolean wasActionConfirmed() {
