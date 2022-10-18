@@ -275,13 +275,15 @@ public class SecureDataRepo {
                 .getWindowCreationManager()
                 .showUpdateProfileCredentialsWindow(windowOwner, initialSignedInUserPlainCredentials);
         if (updatedSignedInUserPlainCredentials == null) return;
-        if (doesProfileUserNameExist(updatedSignedInUserPlainCredentials[0])) {
+        if (!updatedSignedInUserPlainCredentials[0].equals(initialSignedInUserPlainCredentials[0]) &&
+                doesProfileUserNameExist(updatedSignedInUserPlainCredentials[0])) {
             PasswordKeeperMain.getWindowCreationManager().showInformationDialog(
                     "Unsuccessful profile update",
                     "Occupied username",
                     "Profile with given username already exists.");
             return;
         }
+
         if (!updatedSignedInUserPlainCredentials[0].equals(initialSignedInUserPlainCredentials[0])) {
             orderedProfileUsernamesList.remove(signedInUserOrderedUsername);
             String newHashedProfileUsername = BCrypt.hashpw(updatedSignedInUserPlainCredentials[0], BCrypt.gensalt());

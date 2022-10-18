@@ -79,7 +79,7 @@ public class MainWindowController {
     private final PlatformCredential selectedCredential = new PlatformCredential();
     private int indexOfSelectedPlatform = -1;
     private final String[] SETTINGS_OPTIONS = {
-            "1. Generate profile details file\n(importable only on this device system profile)\n_____________________________________________________",
+            "1. Generate profile details file\n_____________________________________________________",
             "2. Generate unprotected, not encrypted,\nplain credentials file (unrecommended)\n_____________________________________________________",
             "3. Import credentials from plain credentials file (2)\n_____________________________________________________",
             "4. Update profile login credentials\n_____________________________________________________",
@@ -312,7 +312,6 @@ public class MainWindowController {
         PasswordKeeperMain.getWindowCreationManager().showLoadingDialog(
                 "Decrypting username. Platform: " + credential.getPlatformName(), "LoadingWindow.fxml");
         decryptedCredentials[0] = secureDataRepo.getStreamManager().getCommandResult();
-
         secureDataRepo.decryptSelectedPlatformCredential(
                 credential.getPlatformPassword(), signedInUserProfile.getProfileUsername());
         PasswordKeeperMain.getWindowCreationManager().showLoadingDialog(
