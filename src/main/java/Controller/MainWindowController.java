@@ -188,7 +188,23 @@ public class MainWindowController {
         if (selectedItem == null || !selectedItem.equals(SETTINGS_OPTIONS[4])) return;
         boolean profileDeletionWasConfirmed = isActionConfirmed("Profile Deletion",
                 "You are going to delete this profile.\nYou will be signed out automatically.");
-        if (!profileDeletionWasConfirmed) return;
+        if (!profileDeletionWasConfirmed) {
+            return;
+        } else {
+            String passwordToVerify = PasswordKeeperMain.getWindowCreationManager()
+                    .showVerifyProfileFileCredentialWindow(windowRootBorderPane.getScene().getWindow(), 'P', true);
+            if (passwordToVerify == null || passwordToVerify.trim().isEmpty()) return;
+            userService.getSecureDataRepo().verifyUserProfilePassword(signedInUserProfile, passwordToVerify);
+            PasswordKeeperMain.getWindowCreationManager()
+                    .showLoadingDialog("Signed in profile password verification", "LoadingWindow.fxml");
+            if (!userService.getSecureDataRepo().isPasswordCorrect()) {
+                PasswordKeeperMain.getWindowCreationManager()
+                        .showInformationDialog("Unsuccessful password verification", "Wrong password",
+                                "Incorrect password to signed in profile. Try again.");
+                return;
+            }
+            userService.getSecureDataRepo().resetCredentialsCorrectionState();
+        }
         SecureDataRepo secDataRepo = userService.getSecureDataRepo();
         File signedInUserProfileFile = new File(secDataRepo.getProfilesDirPath() + secDataRepo.getSignedInUserProfileFileName());
         if (signedInUserProfileFile.exists()) profileFileWasDeleted = signedInUserProfileFile.delete();
@@ -331,6 +347,8 @@ public class MainWindowController {
                             userService.getSecureDataRepo().getProfilesDirPath() +
                                     userService.getSecureDataRepo().getSignedInUserProfileFileName());
         }
+        userService.getSecureDataRepo()
+                .deleteTemporaryProfileDetails(userService.getSecureDataRepo().getSignedInUserProfileFileName());
         userService.signOutVariablesCleanUp();
         userService = null;
         observablePlatformNamesList = null;

@@ -11,11 +11,14 @@ import javafx.stage.Window;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,6 +33,7 @@ public class SecureDataRepo {
     private final String secureBinaryFSProgramName;
     private final String profilesDirPath;
     private final String orderedProfileNamesFilePath;
+    private final String secretsDirPath;
     private final String profileSuffix;
     private SecuredProfileDetails securedProfileDetails;
     private boolean isPasswordCorrect;
@@ -47,6 +51,7 @@ public class SecureDataRepo {
         applicationState = 0;
         profilesDirPath = "data/profiles/";
         orderedProfileNamesFilePath = "data/secrets/secured_profile_names.json";
+        secretsDirPath = "data/secrets/";
         profileSuffix = "_profile.json";
         streamManager = new StreamManager();
         orderedProfileUsernamesList = new JSONArray();
@@ -401,6 +406,17 @@ public class SecureDataRepo {
         if (profileFileName == null) return null;
         if (mode == 'C') return new UserProfile();
         if (mode == 'S') {
+
+            boolean isProfileInJsonFormat = isProfileFileContentInJsonFormat(profilesDirPath + foundProfileFileName);
+            if (isProfileInJsonFormat) {
+                if (!restoreUserProfileFileContent(foundProfileFileName)) {
+                    return null;
+                }
+            }
+
+            copyFileIfExists(profilesDirPath + foundProfileFileName,
+                    secretsDirPath + "tmp_" + foundProfileFileName);
+
             createFileEncrypterDecrypter(signedInUserOrderedUsername, true);
             PasswordKeeperMain.getWindowCreationManager()
                     .showLoadingDialog("Initializing encrypting components", "LoadingWindow.fxml");
@@ -408,6 +424,61 @@ public class SecureDataRepo {
                     standardFileEncrypterDecrypter);
         }
         return null;
+    }
+
+    private boolean restoreUserProfileFileContent(String foundProfileFileName) {
+        File profileFileToRestore = new File(profilesDirPath + foundProfileFileName);
+        File historicalFileToCopyFrom = new File(secretsDirPath + "tmp_" + foundProfileFileName);
+        if (!historicalFileToCopyFrom.exists() || !historicalFileToCopyFrom.isFile()) {
+            return false;
+        }
+        if (profileFileToRestore.exists() && profileFileToRestore.isFile()) {
+            if (profileFileToRestore.delete()) {
+                copyFileIfExists(secretsDirPath + "tmp_" + foundProfileFileName,
+                        profilesDirPath + foundProfileFileName);
+                return true;
+            }
+            return false;
+        }
+        copyFileIfExists(secretsDirPath + "tmp_" + foundProfileFileName,
+                profilesDirPath + foundProfileFileName);
+        return true;
+    }
+
+    private boolean isProfileFileContentInJsonFormat(String pathToProfileFile) {
+        try {
+            String profileFileContent = Files.readString(Path.of(pathToProfileFile));
+            new JSONParser().parse(profileFileContent);
+        } catch (IOException ignore) {
+        } catch (ParseException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public void copyFileIfExists(String sourcePath, String destPath) {
+        File source = new File(sourcePath);
+        if (!source.exists() || !source.isFile()) {
+            return;
+        }
+        File dest = new File(destPath);
+        try {
+            if (dest.exists() && dest.isFile()) {
+                if (dest.delete()) {
+                    Files.copy(source.toPath(), dest.toPath());
+                }
+                return;
+            }
+            Files.copy(source.toPath(), dest.toPath());
+        } catch (IOException ignore) {
+        }
+    }
+
+    public void deleteTemporaryProfileDetails(String userProfileFileName) {
+        File tempProfileFileToDelete = new File(secretsDirPath + "tmp_" + userProfileFileName);
+        if (tempProfileFileToDelete.exists() && tempProfileFileToDelete.isFile()) {
+            tempProfileFileToDelete.delete();
+        }
     }
 
     private UserProfile decryptChosenProfileFileAndReadUserData(String foundProfileFilePath, String plainUsername,
@@ -532,7 +603,7 @@ public class SecureDataRepo {
         });
     }
 
-    private void verifyUserProfilePassword(UserProfile signInUserProfile, String plainPassword) {
+    public void verifyUserProfilePassword(UserProfile signInUserProfile, String plainPassword) {
         applicationState = 1;
         Platform.runLater(() -> {
             boolean scriptFinishedWithSuccess = runSecureScript(2, signInUserProfile.getProfilePassword(),

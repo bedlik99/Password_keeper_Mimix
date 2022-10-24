@@ -13,10 +13,12 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import java.lang.module.ModuleDescriptor;
+import java.io.File;
+import java.util.Optional;
 
 public class PasswordKeeperMain extends Application {
 
+    private final static String profilesDirPath = "data/profiles";
     private final static double mainSceneWidth = Screen.getPrimary().getBounds().getWidth() * 0.6;
     private final static double mainSceneHeight = Screen.getPrimary().getBounds().getHeight() * 0.8;
     private final static WindowCreationManager windowCreationManager = new WindowCreationManager();
@@ -24,6 +26,9 @@ public class PasswordKeeperMain extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        if (!(createdProfilesDirectory().orElse(false))) {
+            return;
+        }
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/window_structure/MainWindow.fxml"));
         Parent root = fxmlLoader.load();
         primaryStage.setTitle("Secure Password Keeper - Profile view");
@@ -57,6 +62,14 @@ public class PasswordKeeperMain extends Application {
             mainWindowController.initializeAfterSigningIn();
             mainStage.show();
         }
+    }
+
+    private Optional<Boolean> createdProfilesDirectory() {
+        File tempDirectory = new File(profilesDirPath);
+        if (!tempDirectory.exists() || !tempDirectory.isDirectory()) {
+            return Optional.of(new File(profilesDirPath).mkdir());
+        }
+        return Optional.of(Boolean.TRUE);
     }
 
     public static void main(String[] args) {

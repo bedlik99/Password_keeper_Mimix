@@ -3,7 +3,6 @@ package DataModel;
 import org.json.simple.JSONObject;
 
 import java.util.LinkedList;
-import java.util.List;
 
 public class UserProfile {
 
